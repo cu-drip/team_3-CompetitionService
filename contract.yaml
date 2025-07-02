@@ -1,0 +1,537 @@
+openapi: 3.0.4
+info:
+  title: CompetitionService API
+  version: 1.0.0
+  description: API для управления спортивными соревнованиями
+
+paths:
+  # ==========================================
+  # Tournament Management
+  # ==========================================
+
+  /tournaments:
+    get:
+      summary: Получить список турниров
+      tags:
+        - Tournament Management
+      parameters:
+        - name: sport
+          in: query
+          description: Вид спорта
+          schema:
+            type: string
+            enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
+        - name: type_tournament
+          in: query
+          description: Тип турнира
+          schema:
+            type: string
+            enum: [ solo, team ]
+        - name: status
+          in: query
+          description: Статус турнира
+          schema:
+            type: string
+            enum: [ upcoming, ongoing, finished ]
+      responses:
+        '200':
+          description: Список турниров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tournament'
+
+    post:
+      summary: Создать новый турнир
+      tags:
+        - Tournament Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TournamentCreateRequest'
+      responses:
+        '201':
+          description: Турнир создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+
+  /tournaments/{id}:
+    get:
+      summary: Получить турнир по ID
+      tags:
+        - Tournament Management
+      parameters:
+        - $ref: '#/components/parameters/TournamentId'
+      responses:
+        '200':
+          description: Турнир найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '404':
+          description: Турнир не найден
+
+    put:
+      summary: Обновить турнир полностью
+      tags:
+        - Tournament Management
+      parameters:
+        - $ref: '#/components/parameters/TournamentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TournamentCreateRequest'
+      responses:
+        '200':
+          description: Турнир обновлен
+
+    patch:
+      summary: Частично обновить турнир
+      tags:
+        - Tournament Management
+      parameters:
+        - $ref: '#/components/parameters/TournamentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Частичное обновление турнира
+              additionalProperties: true
+      responses:
+        '200':
+          description: Турнир обновлен
+
+    delete:
+      summary: Удалить турнир
+      tags:
+        - Tournament Management
+      parameters:
+        - $ref: '#/components/parameters/TournamentId'
+      responses:
+        '204':
+          description: Удаление успешно
+        '404':
+          description: Турнир не найден
+
+  /tournaments/{id}/register:
+    post:
+      summary: Зарегистрировать участника или команду
+      tags:
+        - Tournament Management
+      parameters:
+        - $ref: '#/components/parameters/TournamentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequest'
+      responses:
+        '200':
+          description: Регистрация успешна
+        '400':
+          description: Ошибка валидации
+        '409':
+          description: Турнир заполнен
+
+  /tournaments/{id}/unregister:
+    post:
+      summary: Отменить регистрацию участника или команды
+      tags:
+        - Tournament Management
+      parameters:
+        - $ref: '#/components/parameters/TournamentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequest'
+      responses:
+        '200':
+          description: Регистрация отменена
+        '404':
+          description: Регистрация не найдена
+
+  /tournaments/{id}/notify:
+    post:
+      summary: Отправить уведомления участникам или командам
+      tags:
+        - Tournament Management
+      parameters:
+        - $ref: '#/components/parameters/TournamentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+      responses:
+        '200':
+          description: Уведомления отправлены
+        '404':
+          description: Турнир не найден
+
+  # ==========================================
+  # Team Management
+  # ==========================================
+
+  /teams:
+    get:
+      summary: Получить список команд
+      tags:
+        - Team Management
+      responses:
+        '200':
+          description: Список команд
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+
+    post:
+      summary: Создать команду
+      tags:
+        - Team Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamCreateRequest'
+      responses:
+        '201':
+          description: Команда создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+
+  /teams/{id}:
+    get:
+      summary: Получить команду по ID
+      tags:
+        - Team Management
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+      responses:
+        '200':
+          description: Команда найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+
+    put:
+      summary: Обновить команду
+      tags:
+        - Team Management
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamCreateRequest'
+      responses:
+        '200':
+          description: Команда обновлена
+
+    delete:
+      summary: Удалить команду
+      tags:
+        - Team Management
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+      responses:
+        '204':
+          description: Удаление успешно
+
+components:
+  parameters:
+    TournamentId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Идентификатор турнира
+
+    TeamId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Идентификатор команды
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        surname:
+          type: string
+        patronymic:
+          type: string
+          nullable: true
+        phone_number:
+          type: string
+        email:
+          type: string
+          format: email
+          nullable: true
+        is_admin:
+          type: boolean
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        age:
+          type: integer
+          nullable: true
+        sex:
+          type: string
+          enum: [ male, female, other ]
+          nullable: true
+        weight:
+          type: number
+          format: float
+          nullable: true
+        height:
+          type: number
+          format: float
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        bio:
+          type: string
+          nullable: true
+        avatar_url:
+          type: string
+          nullable: true
+
+    UserSportMmr:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        sport:
+          type: string
+          enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
+        mmr:
+          type: number
+          format: double
+
+    Tournament:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        sport:
+          type: string
+          enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
+        type_tournament:
+          type: string
+          enum: [ solo, team ]
+        type_group:
+          type: string
+          enum: [ olympic, swiss, round_robin ]
+        matches_number:
+          type: integer
+        start_time:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        entry_cost:
+          type: number
+          format: decimal
+        max_participants:
+          type: integer
+        registration_deadline:
+          type: string
+          format: date-time
+        place:
+          type: string
+        organizer_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [ upcoming, ongoing, finished ]
+
+    TournamentCreateRequest:
+      type: object
+      required:
+        - title
+        - description
+        - sport
+        - type_tournament
+        - type_group
+        - start_time
+        - place
+        - organizer_id
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        sport:
+          type: string
+          enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
+        type_tournament:
+          type: string
+          enum: [ solo, team ]
+        type_group:
+          type: string
+          enum: [ olympic, swiss, round_robin ]
+        matches_number:
+          type: integer
+        start_time:
+          type: string
+          format: date-time
+        entry_cost:
+          type: number
+          format: decimal
+        max_participants:
+          type: integer
+        registration_deadline:
+          type: string
+          format: date-time
+        place:
+          type: string
+        organizer_id:
+          type: string
+          format: uuid
+
+    TournamentRegistration:
+      type: object
+      properties:
+        tournament_id:
+          type: string
+          format: uuid
+        sport:
+          type: string
+          enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
+        participant_id:
+          type: string
+          format: uuid
+        participant_type:
+          type: string
+          enum: [ solo, team ]
+        registered_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [ pending, accepted, rejected ]
+
+    RegistrationRequest:
+      type: object
+      required:
+        - participant_id
+        - participant_type
+      properties:
+        participant_id:
+          type: string
+          format: uuid
+          description: ID участника (user_id или team_id)
+        participant_type:
+          type: string
+          enum: [ solo, team ]
+          description: Тип участника
+
+    NotificationRequest:
+      type: object
+      required:
+        - type
+        - message
+      properties:
+        type:
+          type: string
+          enum: [ email, sms, both ]
+        message:
+          type: string
+        target:
+          type: string
+          enum: [ all, registered ]
+          default: registered
+
+    Team:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        avatar:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        mmr:
+          type: number
+          format: double
+          nullable: true
+
+    TeamCreateRequest:
+      type: object
+      required:
+        - name
+        - member_ids
+      properties:
+        name:
+          type: string
+        member_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Массив ID пользователей для добавления в команду
+        avatar:
+          type: string
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: integer
+
+servers:
+  - url: https://api.tournament.local
+    description: Local Dev Server
