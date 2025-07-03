@@ -4,12 +4,112 @@ info:
   version: 1.0.0
   description: API для управления спортивными соревнованиями
 
+security:
+  - BearerAuth: []
+
 paths:
+  # ==========================================
+  # Authentication
+  # ==========================================
+
+  /api/v1/auth/login:
+    post:
+      summary: Авторизация пользователя
+      tags:
+        - Authentication
+      security: []  # Не требует авторизации
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Неверные учетные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/register:
+    post:
+      summary: Регистрация нового пользователя
+      tags:
+        - Authentication
+      security: []  # Не требует авторизации
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Пользователь зарегистрирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '409':
+          description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/refresh:
+    post:
+      summary: Обновить токен доступа
+      tags:
+        - Authentication
+      security: []  # Не требует авторизации
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Токен обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Неверный refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/logout:
+    post:
+      summary: Выход из системы
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Успешный выход
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   # ==========================================
   # Tournament Management
   # ==========================================
 
-  /tournaments:
+  /api/v1/tournaments:
     get:
       summary: Получить список турниров
       tags:
@@ -42,11 +142,19 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Tournament'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     post:
-      summary: Создать новый турнир
+      summary: Создать новый турнир (только для админов)
       tags:
         - Tournament Management
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -60,8 +168,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tournament'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав (требуется роль администратора)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /tournaments/{id}:
+  /api/v1/tournaments/{id}:
     get:
       summary: Получить турнир по ID
       tags:
@@ -75,13 +195,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tournament'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Турнир не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     put:
-      summary: Обновить турнир полностью
+      summary: Обновить турнир полностью (только для админов)
       tags:
         - Tournament Management
+      security:
+        - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/TournamentId'
       requestBody:
@@ -93,11 +225,35 @@ paths:
       responses:
         '200':
           description: Турнир обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав (требуется роль администратора)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Турнир не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     patch:
-      summary: Частично обновить турнир
+      summary: Частично обновить турнир (только для админов)
       tags:
         - Tournament Management
+      security:
+        - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/TournamentId'
       requestBody:
@@ -111,20 +267,60 @@ paths:
       responses:
         '200':
           description: Турнир обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав (требуется роль администратора)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Турнир не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     delete:
-      summary: Удалить турнир
+      summary: Удалить турнир (только для админов)
       tags:
         - Tournament Management
+      security:
+        - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/TournamentId'
       responses:
         '204':
           description: Удаление успешно
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав (требуется роль администратора)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Турнир не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /tournaments/{id}/register:
+  /api/v1/tournaments/{id}/register:
     post:
       summary: Зарегистрировать участника или команду
       tags:
@@ -142,10 +338,24 @@ paths:
           description: Регистрация успешна
         '400':
           description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '409':
           description: Турнир заполнен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /tournaments/{id}/unregister:
+  /api/v1/tournaments/{id}/unregister:
     post:
       summary: Отменить регистрацию участника или команды
       tags:
@@ -161,14 +371,26 @@ paths:
       responses:
         '200':
           description: Регистрация отменена
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Регистрация не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /tournaments/{id}/notify:
+  /api/v1/tournaments/{id}/notify:
     post:
-      summary: Отправить уведомления участникам или командам
+      summary: Отправить уведомления участникам или командам (только для админов)
       tags:
         - Tournament Management
+      security:
+        - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/TournamentId'
       requestBody:
@@ -180,14 +402,30 @@ paths:
       responses:
         '200':
           description: Уведомления отправлены
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав (требуется роль администратора)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Турнир не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ==========================================
   # Team Management
   # ==========================================
 
-  /teams:
+  /api/v1/teams:
     get:
       summary: Получить список команд
       tags:
@@ -201,6 +439,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Team'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     post:
       summary: Создать команду
@@ -219,8 +463,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Team'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /teams/{id}:
+  /api/v1/teams/{id}:
     get:
       summary: Получить команду по ID
       tags:
@@ -234,6 +484,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Team'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Команда не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     put:
       summary: Обновить команду
@@ -250,6 +512,28 @@ paths:
       responses:
         '200':
           description: Команда обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав (только создатель команды может её обновить)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Команда не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     delete:
       summary: Удалить команду
@@ -260,8 +544,80 @@ paths:
       responses:
         '204':
           description: Удаление успешно
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав (только создатель команды может её удалить)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Команда не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==========================================
+  # User Management
+  # ==========================================
+
+  /api/v1/users/me:
+    get:
+      summary: Получить информацию о текущем пользователе
+      tags:
+        - User Management
+      responses:
+        '200':
+          description: Информация о пользователе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Обновить информацию о текущем пользователе
+      tags:
+        - User Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        '200':
+          description: Информация обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT токен для аутентификации. Формат - "Bearer <token>"
+
   parameters:
     TournamentId:
       name: id
@@ -269,6 +625,7 @@ components:
       required: true
       schema:
         type: string
+        format: uuid
       description: Идентификатор турнира
 
     TeamId:
@@ -277,58 +634,235 @@ components:
       required: true
       schema:
         type: string
+        format: uuid
       description: Идентификатор команды
 
   schemas:
+    # ==========================================
+    # Authentication Schemas
+    # ==========================================
+
+    LoginRequest:
+      type: object
+      required:
+        - login
+        - password
+      properties:
+        login:
+          type: string
+          description: Может быть email или номер телефона
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          description: Хешированный пароль
+          example: "hashed_password_here"
+
+    RegisterRequest:
+      type: object
+      required:
+        - name
+        - surname
+        - phone_number
+        - password
+      properties:
+        name:
+          type: string
+          example: "Иван"
+        surname:
+          type: string
+          example: "Иванов"
+        patronymic:
+          type: string
+          nullable: true
+          example: "Иванович"
+        phone_number:
+          type: string
+          example: "+7 (900) 123-45-67"
+        email:
+          type: string
+          format: email
+          nullable: true
+          example: "ivan@example.com"
+        password:
+          type: string
+          format: password
+          description: Хешированный пароль
+          example: "hashed_password_here"
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          example: "1990-01-01"
+        sex:
+          type: string
+          enum: [ male, female, other ]
+          nullable: true
+          example: "male"
+        weight:
+          type: number
+          format: float
+          nullable: true
+          example: 75.5
+        height:
+          type: number
+          format: float
+          nullable: true
+          example: 180.0
+        bio:
+          type: string
+          nullable: true
+          example: "Краткая информация о себе"
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: JWT токен для авторизации
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refresh_token:
+          type: string
+          description: Токен для обновления access_token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        token_type:
+          type: string
+          example: "Bearer"
+        expires_in:
+          type: integer
+          description: Время жизни access_token в секундах
+          example: 3600
+        user:
+          $ref: '#/components/schemas/User'
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+          description: Refresh токен для обновления access_token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    # ==========================================
+    # User Schemas
+    # ==========================================
+
     User:
       type: object
       properties:
         id:
           type: string
           format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
         name:
           type: string
+          example: "Иван"
         surname:
           type: string
+          example: "Иванов"
         patronymic:
           type: string
           nullable: true
+          example: "Иванович"
         phone_number:
           type: string
+          example: "+7 (900) 123-45-67"
         email:
           type: string
           format: email
           nullable: true
+          example: "ivan@example.com"
         is_admin:
           type: boolean
+          example: false
         date_of_birth:
           type: string
           format: date
           nullable: true
+          example: "1990-01-01"
         age:
           type: integer
           nullable: true
+          example: 33
         sex:
           type: string
           enum: [ male, female, other ]
           nullable: true
+          example: "male"
         weight:
           type: number
           format: float
           nullable: true
+          example: 75.5
         height:
           type: number
           format: float
           nullable: true
+          example: 180.0
         created_at:
           type: string
           format: date-time
+          example: "2023-01-01T12:00:00Z"
         bio:
           type: string
           nullable: true
+          example: "Краткая информация о себе"
         avatar_url:
           type: string
           nullable: true
+          example: "https://example.com/avatar.jpg"
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Иван"
+        surname:
+          type: string
+          example: "Иванов"
+        patronymic:
+          type: string
+          nullable: true
+          example: "Иванович"
+        phone_number:
+          type: string
+          example: "+7 (900) 123-45-67"
+        email:
+          type: string
+          format: email
+          nullable: true
+          example: "ivan@example.com"
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          example: "1990-01-01"
+        sex:
+          type: string
+          enum: [ male, female, other ]
+          nullable: true
+          example: "male"
+        weight:
+          type: number
+          format: float
+          nullable: true
+          example: 75.5
+        height:
+          type: number
+          format: float
+          nullable: true
+          example: 180.0
+        bio:
+          type: string
+          nullable: true
+          example: "Краткая информация о себе"
+        avatar_url:
+          type: string
+          nullable: true
+          example: "https://example.com/avatar.jpg"
 
     UserSportMmr:
       type: object
@@ -336,12 +870,19 @@ components:
         user_id:
           type: string
           format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
         sport:
           type: string
           enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
+          example: "football"
         mmr:
           type: number
           format: double
+          example: 1500.0
+
+    # ==========================================
+    # Tournament Schemas
+    # ==========================================
 
     Tournament:
       type: object
@@ -349,43 +890,58 @@ components:
         id:
           type: string
           format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
         title:
           type: string
+          example: "Чемпионат города по футболу"
         description:
           type: string
+          example: "Ежегодный турнир среди любительских команд"
         sport:
           type: string
           enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
+          example: "football"
         type_tournament:
           type: string
           enum: [ solo, team ]
+          example: "team"
         type_group:
           type: string
           enum: [ olympic, swiss, round_robin ]
+          example: "olympic"
         matches_number:
           type: integer
+          example: 16
         start_time:
           type: string
           format: date-time
+          example: "2023-06-15T14:00:00Z"
         created_at:
           type: string
           format: date-time
+          example: "2023-05-01T10:00:00Z"
         entry_cost:
           type: number
           format: decimal
+          example: 1000.00
         max_participants:
           type: integer
+          example: 32
         registration_deadline:
           type: string
           format: date-time
+          example: "2023-06-10T23:59:59Z"
         place:
           type: string
+          example: "Стадион Динамо"
         organizer_id:
           type: string
           format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
         status:
           type: string
           enum: [ upcoming, ongoing, finished ]
+          example: "upcoming"
 
     TournamentCreateRequest:
       type: object
@@ -401,35 +957,47 @@ components:
       properties:
         title:
           type: string
+          example: "Чемпионат города по футболу"
         description:
           type: string
+          example: "Ежегодный турнир среди любительских команд"
         sport:
           type: string
           enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
+          example: "football"
         type_tournament:
           type: string
           enum: [ solo, team ]
+          example: "team"
         type_group:
           type: string
           enum: [ olympic, swiss, round_robin ]
+          example: "olympic"
         matches_number:
           type: integer
+          example: 16
         start_time:
           type: string
           format: date-time
+          example: "2023-06-15T14:00:00Z"
         entry_cost:
           type: number
           format: decimal
+          example: 1000.00
         max_participants:
           type: integer
+          example: 32
         registration_deadline:
           type: string
           format: date-time
+          example: "2023-06-10T23:59:59Z"
         place:
           type: string
+          example: "Стадион Динамо"
         organizer_id:
           type: string
           format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
 
     TournamentRegistration:
       type: object
@@ -437,21 +1005,27 @@ components:
         tournament_id:
           type: string
           format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
         sport:
           type: string
           enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
+          example: "football"
         participant_id:
           type: string
           format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
         participant_type:
           type: string
           enum: [ solo, team ]
+          example: "team"
         registered_at:
           type: string
           format: date-time
+          example: "2023-05-15T10:00:00Z"
         status:
           type: string
           enum: [ pending, accepted, rejected ]
+          example: "accepted"
 
     RegistrationRequest:
       type: object
@@ -463,10 +1037,12 @@ components:
           type: string
           format: uuid
           description: ID участника (user_id или team_id)
+          example: "123e4567-e89b-12d3-a456-426614174000"
         participant_type:
           type: string
           enum: [ solo, team ]
           description: Тип участника
+          example: "team"
 
     NotificationRequest:
       type: object
@@ -477,12 +1053,19 @@ components:
         type:
           type: string
           enum: [ email, sms, both ]
+          example: "both"
         message:
           type: string
+          example: "Турнир начнется через 2 часа!"
         target:
           type: string
           enum: [ all, registered ]
           default: registered
+          example: "registered"
+
+    # ==========================================
+    # Team Schemas
+    # ==========================================
 
     Team:
       type: object
@@ -490,13 +1073,17 @@ components:
         id:
           type: string
           format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
         name:
           type: string
+          example: "Спартак"
         created_at:
           type: string
           format: date-time
+          example: "2023-01-01T12:00:00Z"
         avatar:
           type: string
+          example: "https://example.com/team-avatar.jpg"
         members:
           type: array
           items:
@@ -505,6 +1092,12 @@ components:
           type: number
           format: double
           nullable: true
+          example: 1500.0
+        creator_id:
+          type: string
+          format: uuid
+          description: ID создателя команды
+          example: "123e4567-e89b-12d3-a456-426614174000"
 
     TeamCreateRequest:
       type: object
@@ -514,23 +1107,37 @@ components:
       properties:
         name:
           type: string
+          example: "Спартак"
         member_ids:
           type: array
           items:
             type: string
             format: uuid
           description: Массив ID пользователей для добавления в команду
+          example: ["123e4567-e89b-12d3-a456-426614174000", "123e4567-e89b-12d3-a456-426614174001"]
         avatar:
           type: string
           nullable: true
+          example: "https://example.com/team-avatar.jpg"
+
+    # ==========================================
+    # Error Response
+    # ==========================================
 
     ErrorResponse:
       type: object
       properties:
         message:
           type: string
+          example: "Ошибка аутентификации"
         code:
           type: integer
+          example: 401
+        details:
+          type: object
+          nullable: true
+          description: Дополнительная информация об ошибке
+          example: { "field": "password", "reason": "invalid_credentials" }
 
 servers:
   - url: https://api.tournament.local
