@@ -94,6 +94,7 @@ CREATE TABLE tournament_registrations
 CREATE TABLE matches
 (
     match_id          UUID PRIMARY KEY,
+    tournament_id     UUID REFERENCES tournaments (id) ON DELETE CASCADE,
     started_at        TIMESTAMP,
     created_at        TIMESTAMP,
     position          INT,
