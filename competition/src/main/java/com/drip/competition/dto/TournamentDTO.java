@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class TournamentDTO {
     private Integer matchesNumber;
     private LocalDateTime startTime;
     private LocalDateTime createdAt;
-    private Integer entryCost;
+    private BigDecimal entryCost;
     private Integer maxParticipants;
     private LocalDateTime registrationDeadline;
     private String place;

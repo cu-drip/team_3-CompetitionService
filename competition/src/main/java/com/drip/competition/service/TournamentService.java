@@ -27,7 +27,7 @@ public class TournamentService {
 
     public TournamentDTO createTournament(TournamentDTO dto) {
         Tournament tournament = toEntity(dto);
-        tournament.setId(UUID.randomUUID());
+        // Не устанавливаем ID вручную, позволяем Hibernate сгенерировать его
         return toDTO(tournamentRepository.save(tournament));
     }
 
@@ -40,11 +40,18 @@ public class TournamentService {
     public TournamentDTO updateTournament(UUID id, TournamentDTO dto) {
         Tournament existing = tournamentRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+
         existing.setTitle(dto.getTitle());
         existing.setDescription(dto.getDescription());
         existing.setSport(dto.getSport());
         existing.setMatchesNumber(dto.getMatchesNumber());
-        // Обновляйте остальные поля по необходимости
+        existing.setStartTime(dto.getStartTime());
+        existing.setEntryCost(dto.getEntryCost());
+        existing.setMaxParticipants(dto.getMaxParticipants());
+        existing.setRegistrationDeadline(dto.getRegistrationDeadline());
+        existing.setPlace(dto.getPlace());
+        existing.setOrganizerId(dto.getOrganizedId());
+
         return toDTO(tournamentRepository.save(existing));
     }
 
@@ -58,7 +65,31 @@ public class TournamentService {
         if (dto.getDescription() != null) {
             existing.setDescription(dto.getDescription());
         }
-        // и так далее для нужных полей
+        if (dto.getSport() != null) {
+            existing.setSport(dto.getSport());
+        }
+        if (dto.getMatchesNumber() != null) {
+            existing.setMatchesNumber(dto.getMatchesNumber());
+        }
+        if (dto.getStartTime() != null) {
+            existing.setStartTime(dto.getStartTime());
+        }
+        if (dto.getEntryCost() != null) {
+            existing.setEntryCost(dto.getEntryCost());
+        }
+        if (dto.getMaxParticipants() != null) {
+            existing.setMaxParticipants(dto.getMaxParticipants());
+        }
+        if (dto.getRegistrationDeadline() != null) {
+            existing.setRegistrationDeadline(dto.getRegistrationDeadline());
+        }
+        if (dto.getPlace() != null) {
+            existing.setPlace(dto.getPlace());
+        }
+        if (dto.getOrganizedId() != null) {
+            existing.setOrganizerId(dto.getOrganizedId());
+        }
+
         return toDTO(tournamentRepository.save(existing));
     }
 
@@ -85,6 +116,13 @@ public class TournamentService {
         dto.setDescription(entity.getDescription());
         dto.setSport(entity.getSport());
         dto.setMatchesNumber(entity.getMatchesNumber());
+        dto.setStartTime(entity.getStartTime());
+        dto.setCreatedAt(entity.getCreatedAt());
+        dto.setEntryCost(entity.getEntryCost());
+        dto.setMaxParticipants(entity.getMaxParticipants());
+        dto.setRegistrationDeadline(entity.getRegistrationDeadline());
+        dto.setPlace(entity.getPlace());
+        dto.setOrganizedId(entity.getOrganizerId());
         return dto;
     }
 
@@ -94,6 +132,12 @@ public class TournamentService {
         entity.setDescription(dto.getDescription());
         entity.setSport(dto.getSport());
         entity.setMatchesNumber(dto.getMatchesNumber());
+        entity.setStartTime(dto.getStartTime());
+        entity.setEntryCost(dto.getEntryCost());
+        entity.setMaxParticipants(dto.getMaxParticipants());
+        entity.setRegistrationDeadline(dto.getRegistrationDeadline());
+        entity.setPlace(dto.getPlace());
+        entity.setOrganizerId(dto.getOrganizedId());
         return entity;
     }
 }

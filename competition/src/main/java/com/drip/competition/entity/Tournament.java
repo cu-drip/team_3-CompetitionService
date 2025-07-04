@@ -19,6 +19,7 @@ import java.util.UUID;
 public class Tournament {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column
@@ -29,15 +30,15 @@ public class Tournament {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "sport")
-    private Sport sport; // enum sports
+    private Sport sport;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type_tournament")
-    private TypeTournament typeTournament; // enum solo team
+    private TypeTournament typeTournament;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type_group")
-    private TypeGroup typeGroup; // enum olympic swiss round_robin
+    private TypeGroup typeGroup;
 
     @Column(name = "matches_number")
     private Integer matchesNumber;
@@ -60,7 +61,7 @@ public class Tournament {
     @Column(name = "place")
     private String place;
 
-    @Column(name = "organizer_id")
+    @Column(name = "organizer_id") // Исправлено название поля
     private UUID organizerId;
 
     @PrePersist
