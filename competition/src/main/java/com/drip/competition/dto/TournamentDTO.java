@@ -20,7 +20,7 @@ public class TournamentDTO {
     private Integer matchesNumber;
     private LocalDateTime startTime;
     private LocalDateTime createdAt;
-    private BigDecimal entryCost;
+    private Double entryCost; // BigDecimal
     private Integer maxParticipants;
     private LocalDateTime registrationDeadline;
     private String place;

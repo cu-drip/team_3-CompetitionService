@@ -50,7 +50,7 @@ public class Tournament {
     private LocalDateTime startTime;
 
     @Column(name = "entry_cost")
-    private BigDecimal entryCost;
+    private Double entryCost;
 
     @Column(name = "max_participants")
     private Integer maxParticipants;
