@@ -27,7 +27,6 @@ public class TournamentService {
 
     public TournamentDTO createTournament(TournamentDTO dto) {
         Tournament tournament = toEntity(dto);
-        // Не устанавливаем ID вручную, позволяем Hibernate сгенерировать его
         return toDTO(tournamentRepository.save(tournament));
     }
 
@@ -44,6 +43,8 @@ public class TournamentService {
         existing.setTitle(dto.getTitle());
         existing.setDescription(dto.getDescription());
         existing.setSport(dto.getSport());
+        existing.setTypeTournament(dto.getTypeTournament());
+        existing.setTypeGroup(dto.getTypeGroup());
         existing.setMatchesNumber(dto.getMatchesNumber());
         existing.setStartTime(dto.getStartTime());
         existing.setEntryCost(dto.getEntryCost());
@@ -67,6 +68,12 @@ public class TournamentService {
         }
         if (dto.getSport() != null) {
             existing.setSport(dto.getSport());
+        }
+        if (dto.getTypeTournament() != null) {
+            existing.setTypeTournament(dto.getTypeTournament());
+        }
+        if (dto.getTypeGroup() != null) {
+            existing.setTypeGroup(dto.getTypeGroup());
         }
         if (dto.getMatchesNumber() != null) {
             existing.setMatchesNumber(dto.getMatchesNumber());
@@ -115,6 +122,8 @@ public class TournamentService {
         dto.setTitle(entity.getTitle());
         dto.setDescription(entity.getDescription());
         dto.setSport(entity.getSport());
+        dto.setTypeTournament(entity.getTypeTournament());
+        dto.setTypeGroup(entity.getTypeGroup());
         dto.setMatchesNumber(entity.getMatchesNumber());
         dto.setStartTime(entity.getStartTime());
         dto.setCreatedAt(entity.getCreatedAt());
@@ -123,6 +132,7 @@ public class TournamentService {
         dto.setRegistrationDeadline(entity.getRegistrationDeadline());
         dto.setPlace(entity.getPlace());
         dto.setOrganizedId(entity.getOrganizerId());
+
         return dto;
     }
 
@@ -131,6 +141,8 @@ public class TournamentService {
         entity.setTitle(dto.getTitle());
         entity.setDescription(dto.getDescription());
         entity.setSport(dto.getSport());
+        entity.setTypeTournament(dto.getTypeTournament());
+        entity.setTypeGroup(dto.getTypeGroup());
         entity.setMatchesNumber(dto.getMatchesNumber());
         entity.setStartTime(dto.getStartTime());
         entity.setEntryCost(dto.getEntryCost());
@@ -138,6 +150,7 @@ public class TournamentService {
         entity.setRegistrationDeadline(dto.getRegistrationDeadline());
         entity.setPlace(dto.getPlace());
         entity.setOrganizerId(dto.getOrganizedId());
+
         return entity;
     }
 }
