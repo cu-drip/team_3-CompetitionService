@@ -24,7 +24,7 @@ CREATE TABLE tournaments
     matches_number        INTEGER          DEFAULT 0,
     start_time            TIMESTAMP,
     created_at            TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
-    entry_cost            DECIMAL(10, 2)   DEFAULT 0,
+    entry_cost            FLOAT   DEFAULT 0,
     max_participants      INTEGER          DEFAULT 0,
     registration_deadline TIMESTAMP,
     place                 VARCHAR(255),

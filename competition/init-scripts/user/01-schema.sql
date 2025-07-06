@@ -1,3 +1,6 @@
+-- Создание типов
+CREATE TYPE sex AS ENUM ('MALE', 'FEMALE', 'OTHER');
+
 -- Создание таблицы пользователей
 CREATE TABLE users
 (
@@ -11,13 +14,12 @@ CREATE TABLE users
     is_admin        BOOLEAN DEFAULT FALSE,
     date_of_birth   DATE,
     age             INTEGER,
-    sex             CHAR(1) CHECK (sex IN ('M', 'F')),
+    sex             sex,
     weight          DOUBLE PRECISION CHECK (weight > 0),
     height          DOUBLE PRECISION CHECK (height > 0),
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     bio             TEXT,
-    avatar_url      VARCHAR(500),
-    username        VARCHAR(50) UNIQUE NOT NULL
+    avatar_url      VARCHAR(500)
 );
 
 -- Создание индексов для производительности

@@ -60,7 +60,7 @@ public class Tournament {
     @Column(name = "place")
     private String place;
 
-    @Column(name = "organizer_id") // Исправлено название поля
+    @Column(name = "organizer_id")
     private UUID organizerId;
 
     @PrePersist
