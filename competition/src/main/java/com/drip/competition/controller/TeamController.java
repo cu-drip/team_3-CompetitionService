@@ -59,7 +59,6 @@ public class TeamController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{teamId}/participants/{userId}")
     public ResponseEntity<String> addUserToTeam(@PathVariable UUID teamId,
                                                 @PathVariable UUID userId) {
@@ -67,7 +66,6 @@ public class TeamController {
         return ResponseEntity.ok("Successfully added a new team member!");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{teamId}/participants/{userId}")
     public ResponseEntity<String> removeUserFromTeam(@PathVariable UUID teamId,
                                                      @PathVariable UUID userId) {

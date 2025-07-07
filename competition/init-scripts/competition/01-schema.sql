@@ -3,6 +3,7 @@ CREATE TYPE sport AS ENUM ('football', 'boxing', 'basketball', 'chess', 'tennis'
 CREATE TYPE type_tournament AS ENUM ('solo', 'team');
 CREATE TYPE type_group AS ENUM ('olympic', 'swiss', 'round_robin');
 CREATE TYPE participant_type AS ENUM ('solo', 'team');
+CREATE TYPE status AS ENUM ('pending', 'accepted', 'rejected');
 
 -- Создание таблиц
 CREATE TABLE teams
@@ -24,7 +25,7 @@ CREATE TABLE tournaments
     matches_number        INTEGER          DEFAULT 0,
     start_time            TIMESTAMP,
     created_at            TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
-    entry_cost            FLOAT   DEFAULT 0,
+    entry_cost            FLOAT            DEFAULT 0,
     max_participants      INTEGER          DEFAULT 0,
     registration_deadline TIMESTAMP,
     place                 VARCHAR(255),
@@ -37,8 +38,8 @@ CREATE TABLE tournament_registrations
     sport            sport            NOT NULL,
     participant_id   UUID             NOT NULL, -- Ссылка на user_service или teams
     participant_type participant_type NOT NULL,
-    registered_at    TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
-    status           VARCHAR(50) DEFAULT 'active',
+    registered_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status           status           NOT NULL,
     PRIMARY KEY (tournament_id, participant_id, participant_type)
 );
 
