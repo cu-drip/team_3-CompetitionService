@@ -1,11 +1,12 @@
 package com.drip.competition.dto;
 
 import com.drip.competition.entity.Sport;
+import com.drip.competition.entity.TypeGroup;
+import com.drip.competition.entity.TypeTournament;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -17,10 +18,12 @@ public class TournamentDTO {
     private String title;
     private String description;
     private Sport sport;
+    private TypeTournament typeTournament;
+    private TypeGroup typeGroup;
     private Integer matchesNumber;
     private LocalDateTime startTime;
     private LocalDateTime createdAt;
-    private Double entryCost; // BigDecimal
+    private Double entryCost;
     private Integer maxParticipants;
     private LocalDateTime registrationDeadline;
     private String place;

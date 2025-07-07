@@ -1,6 +1,7 @@
 package com.drip.competition.controller;
 
 import com.drip.competition.dto.TournamentDTO;
+import com.drip.competition.dto.UserDTO;
 import com.drip.competition.service.TournamentService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
@@ -58,22 +59,46 @@ public class TournamentController {
     public ResponseEntity<String> registerParticipant(@PathVariable UUID id,
                                                       @RequestParam UUID participantId,
                                                       @RequestParam String participantType) {
-        tournamentService.registerParticipant(id, participantId, participantType);
-        return ResponseEntity.ok("Registered successfully");
+        try {
+            tournamentService.registerParticipant(id, participantId, participantType);
+            return ResponseEntity.ok("Registered successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
-    @PostMapping("/{id}/unregister")
+
+    @DeleteMapping("/{id}/register")
     public ResponseEntity<String> unregisterParticipant(@PathVariable UUID id,
                                                         @RequestParam UUID participantId,
                                                         @RequestParam String participantType) {
-        tournamentService.unregisterParticipant(id, participantId, participantType);
-        return ResponseEntity.ok("Unregistered successfully");
+        try {
+            tournamentService.unregisterParticipant(id, participantId, participantType);
+            return ResponseEntity.ok("Unregistered successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/{id}/participants")
+    public ResponseEntity<List<UserDTO>> getTournamentParticipants(@PathVariable UUID id) {
+        try {
+            List<UserDTO> participants = tournamentService.getAllTournamentParticipants(id);
+            return ResponseEntity.ok(participants);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/notify")
     public ResponseEntity<String> notifyParticipants(@PathVariable UUID id) {
-        tournamentService.notifyParticipants(id);
-        return ResponseEntity.ok("Notifications sent");
+        try {
+            tournamentService.notifyParticipants(id);
+            return ResponseEntity.ok("Notifications sent");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
