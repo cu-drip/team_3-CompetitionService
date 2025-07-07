@@ -114,25 +114,6 @@ paths:
       summary: Получить список турниров
       tags:
         - Tournament Management
-      parameters:
-        - name: sport
-          in: query
-          description: Вид спорта
-          schema:
-            type: string
-            enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
-        - name: type_tournament
-          in: query
-          description: Тип турнира
-          schema:
-            type: string
-            enum: [ solo, team ]
-        - name: status
-          in: query
-          description: Статус турнира
-          schema:
-            type: string
-            enum: [ upcoming, ongoing, finished ]
       responses:
         '200':
           description: Список турниров
@@ -160,7 +141,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TournamentCreateRequest'
+              $ref: '#/components/schemas/TournamentDTO'
       responses:
         '201':
           description: Турнир создан
@@ -221,7 +202,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TournamentCreateRequest'
+              $ref: '#/components/schemas/TournamentDTO'
       responses:
         '200':
           description: Турнир обновлен
@@ -261,9 +242,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              description: Частичное обновление турнира
-              additionalProperties: true
+              $ref: '#/components/schemas/TournamentDTO'
       responses:
         '200':
           description: Турнир обновлен
@@ -320,6 +299,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/v1/tournaments/{id}/participants:
+    get:
+      summary: Получить всех участников турнира
+      tags:
+        - Tournament Management
+      parameters:
+        - $ref: '#/components/parameters/TournamentId'
+      responses:
+        '200':
+          description: Список участников турнира
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDTO'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Турнир не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/v1/tournaments/{id}/register:
     post:
       summary: Зарегистрировать участника или команду
@@ -327,21 +341,35 @@ paths:
         - Tournament Management
       parameters:
         - $ref: '#/components/parameters/TournamentId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegistrationRequest'
+        - name: participantId
+          in: query
+          required: true
+          description: ID участника (user_id или team_id)
+          schema:
+            type: string
+            format: uuid
+        - name: participantType
+          in: query
+          required: true
+          description: Тип участника
+          schema:
+            type: string
+            enum: [solo, team]
       responses:
         '200':
           description: Регистрация успешна
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Registered successfully"
         '400':
           description: Ошибка валидации
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                type: string
+                example: "Error message"
         '401':
           description: Не авторизован
           content:
@@ -355,22 +383,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/v1/tournaments/{id}/unregister:
-    post:
+    delete:
       summary: Отменить регистрацию участника или команды
       tags:
         - Tournament Management
       parameters:
         - $ref: '#/components/parameters/TournamentId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegistrationRequest'
+        - name: participantId
+          in: query
+          required: true
+          description: ID участника (user_id или team_id)
+          schema:
+            type: string
+            format: uuid
+        - name: participantType
+          in: query
+          required: true
+          description: Тип участника
+          schema:
+            type: string
+            enum: [solo, team]
       responses:
         '200':
           description: Регистрация отменена
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Unregistered successfully"
+        '400':
+          description: Ошибка валидации
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Error message"
         '401':
           description: Не авторизован
           content:
@@ -393,15 +440,21 @@ paths:
         - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/TournamentId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NotificationRequest'
       responses:
         '200':
           description: Уведомления отправлены
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Notifications sent"
+        '400':
+          description: Ошибка валидации
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Error message"
         '401':
           description: Не авторизован
           content:
@@ -438,7 +491,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Team'
+                  $ref: '#/components/schemas/TeamDTO'
         '401':
           description: Не авторизован
           content:
@@ -447,24 +500,32 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
     post:
-      summary: Создать команду
+      summary: Создать команду (только для админов)
       tags:
         - Team Management
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TeamCreateRequest'
+              $ref: '#/components/schemas/TeamDTO'
       responses:
         '201':
           description: Команда создана
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Team'
+                $ref: '#/components/schemas/TeamDTO'
         '401':
           description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав (требуется роль администратора)
           content:
             application/json:
               schema:
@@ -483,7 +544,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Team'
+                $ref: '#/components/schemas/TeamDTO'
         '401':
           description: Не авторизован
           content:
@@ -498,9 +559,11 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
     put:
-      summary: Обновить команду
+      summary: Обновить команду целиком (только для админов)
       tags:
         - Team Management
+      security:
+        - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/TeamId'
       requestBody:
@@ -508,14 +571,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TeamCreateRequest'
+              $ref: '#/components/schemas/TeamDTO'
       responses:
         '200':
           description: Команда обновлена
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Team'
+                $ref: '#/components/schemas/TeamDTO'
         '401':
           description: Не авторизован
           content:
@@ -523,7 +586,47 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
-          description: Недостаточно прав (только создатель команды может её обновить)
+          description: Недостаточно прав (требуется роль администратора)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Команда не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      summary: Обновить команду частично (только для админов)
+      tags:
+        - Team Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamDTO'
+      responses:
+        '200':
+          description: Команда обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamDTO'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Недостаточно прав (требуется роль администратора)
           content:
             application/json:
               schema:
@@ -536,9 +639,11 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
     delete:
-      summary: Удалить команду
+      summary: Удалить команду (только для админов)
       tags:
         - Team Management
+      security:
+        - BearerAuth: []
       parameters:
         - $ref: '#/components/parameters/TeamId'
       responses:
@@ -551,7 +656,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
-          description: Недостаточно прав (только создатель команды может её удалить)
+          description: Недостаточно прав (требуется роль администратора)
           content:
             application/json:
               schema:
@@ -563,48 +668,111 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  # ==========================================
-  # User Management
-  # ==========================================
-
-  /api/v1/users/me:
+  /api/v1/teams/{id}/participants:
     get:
-      summary: Получить информацию о текущем пользователе
+      summary: Получить всех участников команды
       tags:
-        - User Management
+        - Team Management
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
       responses:
         '200':
-          description: Информация о пользователе
+          description: Список участников команды
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDTO'
         '401':
           description: Не авторизован
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
-    put:
-      summary: Обновить информацию о текущем пользователе
-      tags:
-        - User Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserUpdateRequest'
-      responses:
-        '200':
-          description: Информация обновлена
+        '404':
+          description: Команда не найдена
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/teams/{teamId}/participants/{userId}:
+    post:
+      summary: Добавить нового участника в команду
+      tags:
+        - Team Management
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Идентификатор команды
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Идентификатор пользователя
+      responses:
+        '200':
+          description: Участник добавлен в команду
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Successfully added a new team member!"
         '401':
           description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Команда или пользователь не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Удалить участника из команды
+      tags:
+        - Team Management
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Идентификатор команды
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Идентификатор пользователя
+      responses:
+        '200':
+          description: Участник удален из команды
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Successfully removed member from the team."
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Команда или пользователь не найдены
           content:
             application/json:
               schema:
@@ -636,6 +804,15 @@ components:
         type: string
         format: uuid
       description: Идентификатор команды
+
+    UserId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Идентификатор юзера
 
   schemas:
     # ==========================================
@@ -864,6 +1041,60 @@ components:
           nullable: true
           example: "https://example.com/avatar.jpg"
 
+    UserDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        name:
+          type: string
+          example: "Иван"
+        surname:
+          type: string
+          example: "Иванов"
+        patronymic:
+          type: string
+          nullable: true
+          example: "Иванович"
+        phone_number:
+          type: string
+          example: "+7 (900) 123-45-67"
+        email:
+          type: string
+          format: email
+          nullable: true
+          example: "ivan@example.com"
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          example: "1990-01-01"
+        sex:
+          type: string
+          enum: [ male, female, other ]
+          nullable: true
+          example: "male"
+        weight:
+          type: number
+          format: float
+          nullable: true
+          example: 75.5
+        height:
+          type: number
+          format: float
+          nullable: true
+          example: 180.0
+        bio:
+          type: string
+          nullable: true
+          example: "Краткая информация о себе"
+        avatar_url:
+          type: string
+          nullable: true
+          example: "https://example.com/avatar.jpg"
+
     UserSportMmr:
       type: object
       properties:
@@ -942,6 +1173,53 @@ components:
           type: string
           enum: [ upcoming, ongoing, finished ]
           example: "upcoming"
+
+    TournamentDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        title:
+          type: string
+          example: "Чемпионат города по футболу"
+        description:
+          type: string
+          example: "Ежегодный турнир среди любительских команд"
+        sport:
+          type: string
+          enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
+          example: "football"
+        type_tournament:
+          type: string
+          enum: [ solo, team ]
+          example: "team"
+        type_group:
+          type: string
+          enum: [ olympic, swiss, round_robin ]
+          example: "olympic"
+        matches_number:
+          type: integer
+          example: 16
+        start_time:
+          type: string
+          format: date-time
+          example: "2023-06-15T14:00:00Z"
+        entry_cost:
+          type: number
+          format: decimal
+          example: 1000.00
+        max_participants:
+          type: integer
+          example: 32
+        registration_deadline:
+          type: string
+          format: date-time
+          example: "2023-07-15T14:00:00Z"
+        place:
+          type: string
+          example: "Cybersport Arena"
 
     TournamentCreateRequest:
       type: object
@@ -1068,6 +1346,37 @@ components:
     # ==========================================
 
     Team:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        name:
+          type: string
+          example: "Спартак"
+        created_at:
+          type: string
+          format: date-time
+          example: "2023-01-01T12:00:00Z"
+        avatar:
+          type: string
+          example: "https://example.com/team-avatar.jpg"
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        mmr:
+          type: number
+          format: double
+          nullable: true
+          example: 1500.0
+        creator_id:
+          type: string
+          format: uuid
+          description: ID создателя команды
+          example: "123e4567-e89b-12d3-a456-426614174000"
+    TeamDTO:
       type: object
       properties:
         id:
