@@ -45,6 +45,6 @@ public class Registration {
     @PrePersist
     public void prePersist() {
         this.registeredAt = LocalDateTime.now();
-        this.status = RegistrationStatus.PENDING;
+        this.status = RegistrationStatus.ACCEPTED;
     }
 }

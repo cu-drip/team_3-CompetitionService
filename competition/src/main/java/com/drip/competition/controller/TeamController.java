@@ -1,7 +1,6 @@
 package com.drip.competition.controller;
 
 import com.drip.competition.dto.TeamDTO;
-import com.drip.competition.dto.UserDTO;
 import com.drip.competition.service.TeamService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,7 +29,7 @@ public class TeamController {
     }
 
     @GetMapping("/{id}/participants")
-    public List<UserDTO> getAllTeamParticipants(@PathVariable UUID id) {
+    public List<UUID> getAllTeamParticipants(@PathVariable UUID id) {
         return teamService.getAllTeamParticipants(id);
     }
 

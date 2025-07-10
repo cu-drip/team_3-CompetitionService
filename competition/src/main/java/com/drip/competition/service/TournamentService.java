@@ -1,19 +1,15 @@
 package com.drip.competition.service;
 
-import com.drip.competition.client.UserClient;
 import com.drip.competition.dto.NotificationDTO;
 import com.drip.competition.dto.TournamentDTO;
 import com.drip.competition.dto.UserDTO;
-import com.drip.competition.entity.RegistrationStatus;
-import com.drip.competition.entity.Team;
-import com.drip.competition.entity.Tournament;
-import com.drip.competition.entity.ParticipantType;
-import com.drip.competition.entity.Registration;
+import com.drip.competition.entity.*;
 import com.drip.competition.repository.TeamRepository;
 import com.drip.competition.repository.TournamentRegistrationRepository;
 import com.drip.competition.repository.TournamentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,16 +22,13 @@ public class TournamentService {
 
     private final TournamentRepository tournamentRepository;
     private final TournamentRegistrationRepository registrationRepository;
-    private final UserClient userClient;
     private final TeamRepository teamRepository;
 
     public TournamentService(TournamentRepository tournamentRepository,
                              TournamentRegistrationRepository registrationRepository,
-                             UserClient userClient,
                              TeamRepository teamRepository) {
         this.tournamentRepository = tournamentRepository;
         this.registrationRepository = registrationRepository;
-        this.userClient = userClient;
         this.teamRepository = teamRepository;
     }
 
@@ -143,16 +136,14 @@ public class TournamentService {
                 Team team = teamRepository.findById(registration.getParticipantId())
                     .orElse(null);
                 if (team != null) {
-                    List<UserDTO> teamMembers = teamService.getAllTeamParticipants(team.getId());
-                    for (UserDTO user : teamMembers) {
-                        participants.add(user.getId());
-                    }
+                    participants = teamService.getAllTeamParticipants(team.getId());
                 }
             }
         }
         return participants;
     }
 
+    @Transactional
     public void registerParticipant(UUID tournamentId, UUID participantId, String participantType) {
         // Проверяем, что турнир существует
         Tournament tournament = tournamentRepository.findById(tournamentId)
@@ -192,6 +183,7 @@ public class TournamentService {
         registrationRepository.save(registration);
     }
 
+    @Transactional
     public void unregisterParticipant(UUID tournamentId, UUID participantId, String participantType) {
         ParticipantType type = ParticipantType.valueOf(participantType.toLowerCase());
 
