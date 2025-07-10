@@ -2,7 +2,6 @@ package com.drip.competition.service;
 
 import com.drip.competition.dto.NotificationDTO;
 import com.drip.competition.dto.TournamentDTO;
-import com.drip.competition.dto.UserDTO;
 import com.drip.competition.entity.*;
 import com.drip.competition.repository.TeamRepository;
 import com.drip.competition.repository.TournamentRegistrationRepository;
