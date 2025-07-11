@@ -1,19 +1,14 @@
 package com.drip.competition.service;
 
-import com.drip.competition.client.UserClient;
 import com.drip.competition.dto.NotificationDTO;
 import com.drip.competition.dto.TournamentDTO;
-import com.drip.competition.dto.UserDTO;
-import com.drip.competition.entity.RegistrationStatus;
-import com.drip.competition.entity.Team;
-import com.drip.competition.entity.Tournament;
-import com.drip.competition.entity.ParticipantType;
-import com.drip.competition.entity.Registration;
+import com.drip.competition.entity.*;
 import com.drip.competition.repository.TeamRepository;
 import com.drip.competition.repository.TournamentRegistrationRepository;
 import com.drip.competition.repository.TournamentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,24 +21,21 @@ public class TournamentService {
 
     private final TournamentRepository tournamentRepository;
     private final TournamentRegistrationRepository registrationRepository;
-    private final UserClient userClient;
     private final TeamRepository teamRepository;
 
     public TournamentService(TournamentRepository tournamentRepository,
                              TournamentRegistrationRepository registrationRepository,
-                             UserClient userClient,
                              TeamRepository teamRepository) {
         this.tournamentRepository = tournamentRepository;
         this.registrationRepository = registrationRepository;
-        this.userClient = userClient;
         this.teamRepository = teamRepository;
     }
 
     public List<TournamentDTO> getAllTournaments() {
         return tournamentRepository.findAll()
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+            .stream()
+            .map(this::toDTO)
+            .collect(Collectors.toList());
     }
 
     public TournamentDTO createTournament(TournamentDTO dto) {
@@ -53,13 +45,13 @@ public class TournamentService {
 
     public TournamentDTO getTournamentById(UUID id) {
         Tournament tournament = tournamentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
         return toDTO(tournament);
     }
 
     public TournamentDTO updateTournament(UUID id, TournamentDTO dto) {
         Tournament existing = tournamentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
 
         existing.setTitle(dto.getTitle());
         existing.setDescription(dto.getDescription());
@@ -79,7 +71,7 @@ public class TournamentService {
 
     public TournamentDTO partialUpdateTournament(UUID id, TournamentDTO dto) {
         Tournament existing = tournamentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
+            .orElseThrow(() -> new RuntimeException("Tournament not found: " + id));
 
         if (dto.getTitle() != null) {
             existing.setTitle(dto.getTitle());
@@ -128,56 +120,52 @@ public class TournamentService {
     @Autowired // плохо
     private TeamService teamService;
 
-    public List<UserDTO> getAllTournamentParticipants(UUID tournamentId) {
+    public List<UUID> getAllTournamentParticipants(UUID tournamentId) {
         List<Registration> registrations = registrationRepository.findByTournamentIdAndStatus(
-                tournamentId, RegistrationStatus.ACCEPTED);
+            tournamentId, RegistrationStatus.ACCEPTED);
 
-        List<UserDTO> participants = new ArrayList<>();
+        List<UUID> participants = new ArrayList<>();
 
         for (Registration registration : registrations) {
             if (registration.getParticipantType() == ParticipantType.solo) {
-                // Получаем пользователя из UserService
-                UserDTO user = userClient.getUserById(registration.getParticipantId());
-                if (user != null) {
-                    participants.add(user);
-                }
+                // Получаем сольного участника
+                participants.add(registration.getParticipantId());
             } else if (registration.getParticipantType() == ParticipantType.team) {
                 // Получаем команду и её участников
                 Team team = teamRepository.findById(registration.getParticipantId())
-                        .orElse(null);
+                    .orElse(null);
                 if (team != null) {
-                    List<UserDTO> teamMembers = teamService.getAllTeamParticipants(team.getId());
-                    participants.addAll(teamMembers);
+                    participants = teamService.getAllTeamParticipants(team.getId());
                 }
             }
         }
-
         return participants;
     }
 
+    @Transactional
     public void registerParticipant(UUID tournamentId, UUID participantId, String participantType) {
         // Проверяем, что турнир существует
         Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new RuntimeException("Tournament not found"));
+            .orElseThrow(() -> new RuntimeException("Tournament not found"));
 
         // Проверяем дедлайн регистрации
         if (tournament.getRegistrationDeadline() != null &&
-                LocalDateTime.now().isAfter(tournament.getRegistrationDeadline())) {
-            throw new RuntimeException("Registration deadline has passed");
+            LocalDateTime.now().isAfter(tournament.getRegistrationDeadline())) {
+            throw new RuntimeException("Registration deadline has passed or isn't stated");
         }
 
-        ParticipantType type = ParticipantType.valueOf(participantType.toUpperCase());
+        ParticipantType type = ParticipantType.valueOf(participantType.toLowerCase());
 
         // Проверяем, что участник еще не зарегистрирован
         if (registrationRepository.existsByTournamentIdAndParticipantIdAndParticipantType(
-                tournamentId, participantId, type)) {
+            tournamentId, participantId, type)) {
             throw new RuntimeException("Participant is already registered");
         }
 
         // Проверяем лимит участников
         if (tournament.getMaxParticipants() != null) {
             long currentParticipants = registrationRepository.countByTournamentIdAndStatus(
-                    tournamentId, RegistrationStatus.ACCEPTED);
+                tournamentId, RegistrationStatus.ACCEPTED);
             if (currentParticipants >= tournament.getMaxParticipants()) {
                 throw new RuntimeException("Tournament is full");
             }
@@ -189,29 +177,30 @@ public class TournamentService {
         registration.setParticipantId(participantId);
         registration.setParticipantType(type);
         registration.setSport(tournament.getSport());
-        registration.setStatus(RegistrationStatus.PENDING);
+        registration.setStatus(RegistrationStatus.ACCEPTED);
 
         registrationRepository.save(registration);
     }
 
+    @Transactional
     public void unregisterParticipant(UUID tournamentId, UUID participantId, String participantType) {
-        ParticipantType type = ParticipantType.valueOf(participantType.toUpperCase());
+        ParticipantType type = ParticipantType.valueOf(participantType.toLowerCase());
 
         // Проверяем, что регистрация существует
         if (!registrationRepository.existsByTournamentIdAndParticipantIdAndParticipantType(
-                tournamentId, participantId, type)) {
+            tournamentId, participantId, type)) {
             throw new RuntimeException("Registration not found");
         }
 
         // Удаляем регистрацию
         registrationRepository.deleteByTournamentIdAndParticipantIdAndParticipantType(
-                tournamentId, participantId, type);
+            tournamentId, participantId, type);
     }
 
     public void notifyParticipants(UUID tournamentId) {
         // Получаем всех зарегистрированных участников
         List<UUID> participantIds = registrationRepository.findParticipantIdsByTournamentIdAndStatus(
-                tournamentId, RegistrationStatus.ACCEPTED);
+            tournamentId, RegistrationStatus.ACCEPTED);
 
         // Здесь должна быть логика уведомления:
         // 1. Можно использовать message queue (RabbitMQ, Kafka)
@@ -221,7 +210,7 @@ public class TournamentService {
 
         // Пример с использованием notification service:
         Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new RuntimeException("Tournament not found"));
+            .orElseThrow(() -> new RuntimeException("Tournament not found"));
 
         NotificationDTO notification = new NotificationDTO();
 //        notification.setTitle("Tournament Update");

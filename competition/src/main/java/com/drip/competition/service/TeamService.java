@@ -1,8 +1,6 @@
 package com.drip.competition.service;
 
-import com.drip.competition.client.UserClient;
 import com.drip.competition.dto.TeamDTO;
-import com.drip.competition.dto.UserDTO;
 import com.drip.competition.entity.Team;
 import com.drip.competition.entity.TeamPlayerRelation;
 import com.drip.competition.repository.TeamPlayerRelationRepository;
@@ -16,13 +14,11 @@ import java.util.stream.Collectors;
 @Service
 public class TeamService {
     private final TeamRepository teamRepository;
-    private final UserClient userClient;
     private final TeamPlayerRelationRepository teamPlayerRelationRepository;
 
-    public TeamService(TeamRepository teamRepository, UserClient userClient,
+    public TeamService(TeamRepository teamRepository,
                        TeamPlayerRelationRepository teamPlayerRelationRepository) {
         this.teamRepository = teamRepository;
-        this.userClient = userClient;
         this.teamPlayerRelationRepository = teamPlayerRelationRepository;
     }
 
@@ -74,19 +70,17 @@ public class TeamService {
         teamRepository.delete(team);
     }
 
-    public List<UserDTO> getAllTeamParticipants(UUID id) {
+    public List<UUID> getAllTeamParticipants(UUID id) {
         Team team = teamRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Team not found: " + id));
 
         return teamPlayerRelationRepository.findByTeamId(id)
             .stream()
-            .map(relation -> userClient.getUserById(relation.getUserId()))
+            .map(TeamPlayerRelation::getUserId)
             .collect(Collectors.toList());
     }
 
     public void addUserToTeam(UUID teamId, UUID userId) {
-        UserDTO userDTO = userClient.getUserById(userId);
-
         Team team = teamRepository.findById(teamId)
             .orElseThrow(() -> new RuntimeException("Team not found: " + teamId));
 

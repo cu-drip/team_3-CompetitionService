@@ -5,106 +5,9 @@ info:
   description: API для управления спортивными соревнованиями
 
 security:
-  - BearerAuth: []
+  - BearerAuth: [ ]
 
 paths:
-  # ==========================================
-  # Authentication
-  # ==========================================
-
-  /api/v1/auth/login:
-    post:
-      summary: Авторизация пользователя
-      tags:
-        - Authentication
-      security: []  # Не требует авторизации
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequest'
-      responses:
-        '200':
-          description: Успешная авторизация
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginResponse'
-        '401':
-          description: Неверные учетные данные
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /api/v1/auth/register:
-    post:
-      summary: Регистрация нового пользователя
-      tags:
-        - Authentication
-      security: []  # Не требует авторизации
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterRequest'
-      responses:
-        '201':
-          description: Пользователь зарегистрирован
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginResponse'
-        '409':
-          description: Пользователь уже существует
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /api/v1/auth/refresh:
-    post:
-      summary: Обновить токен доступа
-      tags:
-        - Authentication
-      security: []  # Не требует авторизации
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RefreshTokenRequest'
-      responses:
-        '200':
-          description: Токен обновлен
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginResponse'
-        '401':
-          description: Неверный refresh token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /api/v1/auth/logout:
-    post:
-      summary: Выход из системы
-      tags:
-        - Authentication
-      responses:
-        '200':
-          description: Успешный выход
-        '401':
-          description: Не авторизован
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
   # ==========================================
   # Tournament Management
   # ==========================================
@@ -122,7 +25,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Tournament'
+                  $ref: '#/components/schemas/TournamentDTO'
         '401':
           description: Не авторизован
           content:
@@ -135,7 +38,7 @@ paths:
       tags:
         - Tournament Management
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -148,7 +51,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Tournament'
+                $ref: '#/components/schemas/TournamentDTO'
         '401':
           description: Не авторизован
           content:
@@ -162,7 +65,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/v1/tournaments/{id}:
+  /api/v1/tournaments/{tournamentId}:
     get:
       summary: Получить турнир по ID
       tags:
@@ -175,7 +78,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Tournament'
+                $ref: '#/components/schemas/TournamentDTO'
         '401':
           description: Не авторизован
           content:
@@ -194,7 +97,7 @@ paths:
       tags:
         - Tournament Management
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/TournamentId'
       requestBody:
@@ -209,7 +112,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Tournament'
+                $ref: '#/components/schemas/TournamentDTO'
         '401':
           description: Не авторизован
           content:
@@ -234,7 +137,7 @@ paths:
       tags:
         - Tournament Management
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/TournamentId'
       requestBody:
@@ -249,7 +152,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Tournament'
+                $ref: '#/components/schemas/TournamentDTO'
         '401':
           description: Не авторизован
           content:
@@ -274,7 +177,7 @@ paths:
       tags:
         - Tournament Management
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/TournamentId'
       responses:
@@ -299,7 +202,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/v1/tournaments/{id}/participants:
+  /api/v1/tournaments/{tournamentId}/participants:
     get:
       summary: Получить всех участников турнира
       tags:
@@ -314,7 +217,8 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserDTO'
+                  type: string
+                  format: uuid
         '400':
           description: Ошибка валидации
           content:
@@ -334,7 +238,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/v1/tournaments/{id}/register:
+  /api/v1/tournaments/{tournamentId}/participants/{participantId}:
     post:
       summary: Зарегистрировать участника или команду
       tags:
@@ -342,7 +246,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/TournamentId'
         - name: participantId
-          in: query
+          in: path
           required: true
           description: ID участника (user_id или team_id)
           schema:
@@ -354,7 +258,7 @@ paths:
           description: Тип участника
           schema:
             type: string
-            enum: [solo, team]
+            enum: [ solo, team ]
       responses:
         '200':
           description: Регистрация успешна
@@ -390,7 +294,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/TournamentId'
         - name: participantId
-          in: query
+          in: path
           required: true
           description: ID участника (user_id или team_id)
           schema:
@@ -402,7 +306,7 @@ paths:
           description: Тип участника
           schema:
             type: string
-            enum: [solo, team]
+            enum: [ solo, team ]
       responses:
         '200':
           description: Регистрация отменена
@@ -431,13 +335,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/v1/tournaments/{id}/notify:
+  /api/v1/tournaments/{tournamentId}/notify:
     post:
       summary: Отправить уведомления участникам или командам (только для админов)
       tags:
         - Tournament Management
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/TournamentId'
       responses:
@@ -504,7 +408,7 @@ paths:
       tags:
         - Team Management
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -563,7 +467,7 @@ paths:
       tags:
         - Team Management
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/TeamId'
       requestBody:
@@ -603,7 +507,7 @@ paths:
       tags:
         - Team Management
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/TeamId'
       requestBody:
@@ -643,7 +547,7 @@ paths:
       tags:
         - Team Management
       security:
-        - BearerAuth: []
+        - BearerAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/TeamId'
       responses:
@@ -683,7 +587,8 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserDTO'
+                  type: string
+                  format: uuid
         '401':
           description: Не авторизован
           content:
@@ -788,7 +693,7 @@ components:
 
   parameters:
     TournamentId:
-      name: id
+      name: tournamentId
       in: path
       required: true
       schema:
@@ -816,363 +721,8 @@ components:
 
   schemas:
     # ==========================================
-    # Authentication Schemas
-    # ==========================================
-
-    LoginRequest:
-      type: object
-      required:
-        - login
-        - password
-      properties:
-        login:
-          type: string
-          description: Может быть email или номер телефона
-          example: "user@example.com"
-        password:
-          type: string
-          format: password
-          description: Хешированный пароль
-          example: "hashed_password_here"
-
-    RegisterRequest:
-      type: object
-      required:
-        - name
-        - surname
-        - phone_number
-        - password
-      properties:
-        name:
-          type: string
-          example: "Иван"
-        surname:
-          type: string
-          example: "Иванов"
-        patronymic:
-          type: string
-          nullable: true
-          example: "Иванович"
-        phone_number:
-          type: string
-          example: "+7 (900) 123-45-67"
-        email:
-          type: string
-          format: email
-          nullable: true
-          example: "ivan@example.com"
-        password:
-          type: string
-          format: password
-          description: Хешированный пароль
-          example: "hashed_password_here"
-        date_of_birth:
-          type: string
-          format: date
-          nullable: true
-          example: "1990-01-01"
-        sex:
-          type: string
-          enum: [ male, female, other ]
-          nullable: true
-          example: "male"
-        weight:
-          type: number
-          format: float
-          nullable: true
-          example: 75.5
-        height:
-          type: number
-          format: float
-          nullable: true
-          example: 180.0
-        bio:
-          type: string
-          nullable: true
-          example: "Краткая информация о себе"
-
-    LoginResponse:
-      type: object
-      properties:
-        access_token:
-          type: string
-          description: JWT токен для авторизации
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        refresh_token:
-          type: string
-          description: Токен для обновления access_token
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        token_type:
-          type: string
-          example: "Bearer"
-        expires_in:
-          type: integer
-          description: Время жизни access_token в секундах
-          example: 3600
-        user:
-          $ref: '#/components/schemas/User'
-
-    RefreshTokenRequest:
-      type: object
-      required:
-        - refresh_token
-      properties:
-        refresh_token:
-          type: string
-          description: Refresh токен для обновления access_token
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-
-    # ==========================================
-    # User Schemas
-    # ==========================================
-
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: "123e4567-e89b-12d3-a456-426614174000"
-        name:
-          type: string
-          example: "Иван"
-        surname:
-          type: string
-          example: "Иванов"
-        patronymic:
-          type: string
-          nullable: true
-          example: "Иванович"
-        phone_number:
-          type: string
-          example: "+7 (900) 123-45-67"
-        email:
-          type: string
-          format: email
-          nullable: true
-          example: "ivan@example.com"
-        is_admin:
-          type: boolean
-          example: false
-        date_of_birth:
-          type: string
-          format: date
-          nullable: true
-          example: "1990-01-01"
-        age:
-          type: integer
-          nullable: true
-          example: 33
-        sex:
-          type: string
-          enum: [ male, female, other ]
-          nullable: true
-          example: "male"
-        weight:
-          type: number
-          format: float
-          nullable: true
-          example: 75.5
-        height:
-          type: number
-          format: float
-          nullable: true
-          example: 180.0
-        created_at:
-          type: string
-          format: date-time
-          example: "2023-01-01T12:00:00Z"
-        bio:
-          type: string
-          nullable: true
-          example: "Краткая информация о себе"
-        avatar_url:
-          type: string
-          nullable: true
-          example: "https://example.com/avatar.jpg"
-
-    UserUpdateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          example: "Иван"
-        surname:
-          type: string
-          example: "Иванов"
-        patronymic:
-          type: string
-          nullable: true
-          example: "Иванович"
-        phone_number:
-          type: string
-          example: "+7 (900) 123-45-67"
-        email:
-          type: string
-          format: email
-          nullable: true
-          example: "ivan@example.com"
-        date_of_birth:
-          type: string
-          format: date
-          nullable: true
-          example: "1990-01-01"
-        sex:
-          type: string
-          enum: [ male, female, other ]
-          nullable: true
-          example: "male"
-        weight:
-          type: number
-          format: float
-          nullable: true
-          example: 75.5
-        height:
-          type: number
-          format: float
-          nullable: true
-          example: 180.0
-        bio:
-          type: string
-          nullable: true
-          example: "Краткая информация о себе"
-        avatar_url:
-          type: string
-          nullable: true
-          example: "https://example.com/avatar.jpg"
-
-    UserDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: "123e4567-e89b-12d3-a456-426614174000"
-        name:
-          type: string
-          example: "Иван"
-        surname:
-          type: string
-          example: "Иванов"
-        patronymic:
-          type: string
-          nullable: true
-          example: "Иванович"
-        phone_number:
-          type: string
-          example: "+7 (900) 123-45-67"
-        email:
-          type: string
-          format: email
-          nullable: true
-          example: "ivan@example.com"
-        date_of_birth:
-          type: string
-          format: date
-          nullable: true
-          example: "1990-01-01"
-        sex:
-          type: string
-          enum: [ male, female, other ]
-          nullable: true
-          example: "male"
-        weight:
-          type: number
-          format: float
-          nullable: true
-          example: 75.5
-        height:
-          type: number
-          format: float
-          nullable: true
-          example: 180.0
-        bio:
-          type: string
-          nullable: true
-          example: "Краткая информация о себе"
-        avatar_url:
-          type: string
-          nullable: true
-          example: "https://example.com/avatar.jpg"
-
-    UserSportMmr:
-      type: object
-      properties:
-        user_id:
-          type: string
-          format: uuid
-          example: "123e4567-e89b-12d3-a456-426614174000"
-        sport:
-          type: string
-          enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
-          example: "football"
-        mmr:
-          type: number
-          format: double
-          example: 1500.0
-
-    # ==========================================
     # Tournament Schemas
     # ==========================================
-
-    Tournament:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: "123e4567-e89b-12d3-a456-426614174000"
-        title:
-          type: string
-          example: "Чемпионат города по футболу"
-        description:
-          type: string
-          example: "Ежегодный турнир среди любительских команд"
-        sport:
-          type: string
-          enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
-          example: "football"
-        type_tournament:
-          type: string
-          enum: [ solo, team ]
-          example: "team"
-        type_group:
-          type: string
-          enum: [ olympic, swiss, round_robin ]
-          example: "olympic"
-        matches_number:
-          type: integer
-          example: 16
-        start_time:
-          type: string
-          format: date-time
-          example: "2023-06-15T14:00:00Z"
-        created_at:
-          type: string
-          format: date-time
-          example: "2023-05-01T10:00:00Z"
-        entry_cost:
-          type: number
-          format: decimal
-          example: 1000.00
-        max_participants:
-          type: integer
-          example: 32
-        registration_deadline:
-          type: string
-          format: date-time
-          example: "2023-06-10T23:59:59Z"
-        place:
-          type: string
-          example: "Стадион Динамо"
-        organizer_id:
-          type: string
-          format: uuid
-          example: "123e4567-e89b-12d3-a456-426614174000"
-        status:
-          type: string
-          enum: [ upcoming, ongoing, finished ]
-          example: "upcoming"
 
     TournamentDTO:
       type: object
@@ -1189,193 +739,50 @@ components:
           example: "Ежегодный турнир среди любительских команд"
         sport:
           type: string
-          enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
-          example: "football"
-        type_tournament:
+          enum: [ FOOTBALL, BOXING, BASKETBALL, CHESS, TENNIS, JIU_JITSU ]
+          example: "FOOTBALL"
+        typeTournament:
           type: string
           enum: [ solo, team ]
           example: "team"
-        type_group:
+        typeGroup:
           type: string
           enum: [ olympic, swiss, round_robin ]
           example: "olympic"
-        matches_number:
+        matchesNumber:
           type: integer
           example: 16
-        start_time:
+        startTime:
           type: string
           format: date-time
           example: "2023-06-15T14:00:00Z"
-        entry_cost:
-          type: number
-          format: decimal
-          example: 1000.00
-        max_participants:
-          type: integer
-          example: 32
-        registration_deadline:
+        createdAt:
           type: string
           format: date-time
-          example: "2023-07-15T14:00:00Z"
-        place:
-          type: string
-          example: "Cybersport Arena"
-
-    TournamentCreateRequest:
-      type: object
-      required:
-        - title
-        - description
-        - sport
-        - type_tournament
-        - type_group
-        - start_time
-        - place
-        - organizer_id
-      properties:
-        title:
-          type: string
-          example: "Чемпионат города по футболу"
-        description:
-          type: string
-          example: "Ежегодный турнир среди любительских команд"
-        sport:
-          type: string
-          enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
-          example: "football"
-        type_tournament:
-          type: string
-          enum: [ solo, team ]
-          example: "team"
-        type_group:
-          type: string
-          enum: [ olympic, swiss, round_robin ]
-          example: "olympic"
-        matches_number:
-          type: integer
-          example: 16
-        start_time:
-          type: string
-          format: date-time
-          example: "2023-06-15T14:00:00Z"
-        entry_cost:
+          example: "2023-05-01T10:00:00Z"
+        entryCost:
           type: number
-          format: decimal
+          format: double
           example: 1000.00
-        max_participants:
+        maxParticipants:
           type: integer
           example: 32
-        registration_deadline:
+        registrationDeadline:
           type: string
           format: date-time
           example: "2023-06-10T23:59:59Z"
         place:
           type: string
           example: "Стадион Динамо"
-        organizer_id:
+        organizedId:
           type: string
           format: uuid
           example: "123e4567-e89b-12d3-a456-426614174000"
-
-    TournamentRegistration:
-      type: object
-      properties:
-        tournament_id:
-          type: string
-          format: uuid
-          example: "123e4567-e89b-12d3-a456-426614174000"
-        sport:
-          type: string
-          enum: [ football, boxing, basketball, chess, tennis, jiu_jitsu ]
-          example: "football"
-        participant_id:
-          type: string
-          format: uuid
-          example: "123e4567-e89b-12d3-a456-426614174000"
-        participant_type:
-          type: string
-          enum: [ solo, team ]
-          example: "team"
-        registered_at:
-          type: string
-          format: date-time
-          example: "2023-05-15T10:00:00Z"
-        status:
-          type: string
-          enum: [ pending, accepted, rejected ]
-          example: "accepted"
-
-    RegistrationRequest:
-      type: object
-      required:
-        - participant_id
-        - participant_type
-      properties:
-        participant_id:
-          type: string
-          format: uuid
-          description: ID участника (user_id или team_id)
-          example: "123e4567-e89b-12d3-a456-426614174000"
-        participant_type:
-          type: string
-          enum: [ solo, team ]
-          description: Тип участника
-          example: "team"
-
-    NotificationRequest:
-      type: object
-      required:
-        - type
-        - message
-      properties:
-        type:
-          type: string
-          enum: [ email, sms, both ]
-          example: "both"
-        message:
-          type: string
-          example: "Турнир начнется через 2 часа!"
-        target:
-          type: string
-          enum: [ all, registered ]
-          default: registered
-          example: "registered"
 
     # ==========================================
     # Team Schemas
     # ==========================================
 
-    Team:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: "123e4567-e89b-12d3-a456-426614174000"
-        name:
-          type: string
-          example: "Спартак"
-        created_at:
-          type: string
-          format: date-time
-          example: "2023-01-01T12:00:00Z"
-        avatar:
-          type: string
-          example: "https://example.com/team-avatar.jpg"
-        members:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
-        mmr:
-          type: number
-          format: double
-          nullable: true
-          example: 1500.0
-        creator_id:
-          type: string
-          format: uuid
-          description: ID создателя команды
-          example: "123e4567-e89b-12d3-a456-426614174000"
     TeamDTO:
       type: object
       properties:
@@ -1386,47 +793,12 @@ components:
         name:
           type: string
           example: "Спартак"
-        created_at:
+        createdAt:
           type: string
           format: date-time
           example: "2023-01-01T12:00:00Z"
         avatar:
           type: string
-          example: "https://example.com/team-avatar.jpg"
-        members:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
-        mmr:
-          type: number
-          format: double
-          nullable: true
-          example: 1500.0
-        creator_id:
-          type: string
-          format: uuid
-          description: ID создателя команды
-          example: "123e4567-e89b-12d3-a456-426614174000"
-
-    TeamCreateRequest:
-      type: object
-      required:
-        - name
-        - member_ids
-      properties:
-        name:
-          type: string
-          example: "Спартак"
-        member_ids:
-          type: array
-          items:
-            type: string
-            format: uuid
-          description: Массив ID пользователей для добавления в команду
-          example: ["123e4567-e89b-12d3-a456-426614174000", "123e4567-e89b-12d3-a456-426614174001"]
-        avatar:
-          type: string
-          nullable: true
           example: "https://example.com/team-avatar.jpg"
 
     # ==========================================
@@ -1449,5 +821,5 @@ components:
           example: { "field": "password", "reason": "invalid_credentials" }
 
 servers:
-  - url: https://api.tournament.local
-    description: Local Dev Server
+  - url: http://competition-service
+    description: CompetitionService Local

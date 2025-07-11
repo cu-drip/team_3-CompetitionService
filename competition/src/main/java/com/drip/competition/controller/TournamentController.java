@@ -1,10 +1,9 @@
 package com.drip.competition.controller;
 
 import com.drip.competition.dto.TournamentDTO;
-import com.drip.competition.dto.UserDTO;
 import com.drip.competition.service.TournamentService;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,36 +30,36 @@ public class TournamentController {
         return tournamentService.createTournament(dto);
     }
 
-    @GetMapping("/{id}")
-    public TournamentDTO getTournamentById(@PathVariable UUID id) {
-        return tournamentService.getTournamentById(id);
+    @GetMapping("/{tournamentId}")
+    public TournamentDTO getTournamentById(@PathVariable UUID tournamentId) {
+        return tournamentService.getTournamentById(tournamentId);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}")
-    public TournamentDTO updateTournament(@PathVariable UUID id, @RequestBody TournamentDTO dto) {
-        return tournamentService.updateTournament(id, dto);
+    @PutMapping("/{tournamentId}")
+    public TournamentDTO updateTournament(@PathVariable UUID tournamentId, @RequestBody TournamentDTO dto) {
+        return tournamentService.updateTournament(tournamentId, dto);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/{id}")
-    public TournamentDTO partialUpdateTournament(@PathVariable UUID id, @RequestBody TournamentDTO dto) {
-        return tournamentService.partialUpdateTournament(id, dto);
+    @PatchMapping("/{tournamentId}")
+    public TournamentDTO partialUpdateTournament(@PathVariable UUID tournamentId, @RequestBody TournamentDTO dto) {
+        return tournamentService.partialUpdateTournament(tournamentId, dto);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTournament(@PathVariable UUID id) {
-        tournamentService.deleteTournament(id);
+    @DeleteMapping("/{tournamentId}")
+    public ResponseEntity<Void> deleteTournament(@PathVariable UUID tournamentId) {
+        tournamentService.deleteTournament(tournamentId);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/register")
-    public ResponseEntity<String> registerParticipant(@PathVariable UUID id,
-                                                      @RequestParam UUID participantId,
+    @PostMapping("/{tournamentId}/participants/{participantId}")
+    public ResponseEntity<String> registerParticipant(@PathVariable UUID tournamentId,
+                                                      @PathVariable UUID participantId,
                                                       @RequestParam String participantType) {
         try {
-            tournamentService.registerParticipant(id, participantId, participantType);
+            tournamentService.registerParticipant(tournamentId, participantId, participantType);
             return ResponseEntity.ok("Registered successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -68,12 +67,12 @@ public class TournamentController {
     }
 
 
-    @DeleteMapping("/{id}/register")
-    public ResponseEntity<String> unregisterParticipant(@PathVariable UUID id,
-                                                        @RequestParam UUID participantId,
+    @DeleteMapping("/{tournamentId}/participants/{participantId}")
+    public ResponseEntity<String> unregisterParticipant(@PathVariable UUID tournamentId,
+                                                        @PathVariable UUID participantId,
                                                         @RequestParam String participantType) {
         try {
-            tournamentService.unregisterParticipant(id, participantId, participantType);
+            tournamentService.unregisterParticipant(tournamentId, participantId, participantType);
             return ResponseEntity.ok("Unregistered successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -81,10 +80,10 @@ public class TournamentController {
     }
 
 
-    @GetMapping("/{id}/participants")
-    public ResponseEntity<List<UserDTO>> getTournamentParticipants(@PathVariable UUID id) {
+    @GetMapping("/{tournamentId}/participants")
+    public ResponseEntity<List<UUID>> getTournamentParticipants(@PathVariable UUID tournamentId) {
         try {
-            List<UserDTO> participants = tournamentService.getAllTournamentParticipants(id);
+            List<UUID> participants = tournamentService.getAllTournamentParticipants(tournamentId);
             return ResponseEntity.ok(participants);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
@@ -92,10 +91,10 @@ public class TournamentController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/{id}/notify")
-    public ResponseEntity<String> notifyParticipants(@PathVariable UUID id) {
+    @PostMapping("/{tournamentId}/notify")
+    public ResponseEntity<String> notifyParticipants(@PathVariable UUID tournamentId) {
         try {
-            tournamentService.notifyParticipants(id);
+            tournamentService.notifyParticipants(tournamentId);
             return ResponseEntity.ok("Notifications sent");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
