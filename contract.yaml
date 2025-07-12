@@ -379,6 +379,178 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
   # ==========================================
+  # User Tournament Endpoints
+  # ==========================================
+
+  /api/v1/tournaments/users/{userId}:
+    get:
+      summary: Получить турниры пользователя с фильтрацией
+      tags:
+        - User Tournament Management
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - name: state
+          in: query
+          required: false
+          description: Состояние турнира
+          schema:
+            $ref: '#/components/schemas/TournamentInstantState'
+        - name: participantType
+          in: query
+          required: false
+          description: Тип участника
+          schema:
+            type: string
+            enum: [ solo, team ]
+      responses:
+        '200':
+          description: Список ID турниров пользователя
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/tournaments/users/{userId}/details:
+    get:
+      summary: Получить детальную информацию о турнирах пользователя
+      tags:
+        - User Tournament Management
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - name: state
+          in: query
+          required: false
+          description: Состояние турнира
+          schema:
+            $ref: '#/components/schemas/TournamentInstantState'
+      responses:
+        '200':
+          description: Детальная информация о турнирах пользователя
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TournamentDTO'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/tournaments/users/{userId}/ongoing:
+    get:
+      summary: Получить текущие турниры пользователя
+      tags:
+        - User Tournament Management
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Список ID текущих турниров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/tournaments/users/{userId}/open-registration:
+    get:
+      summary: Получить турниры пользователя с открытой регистрацией
+      tags:
+        - User Tournament Management
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Список ID турниров с открытой регистрацией
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/tournaments/users/{userId}/ended:
+    get:
+      summary: Получить завершенные турниры пользователя
+      tags:
+        - User Tournament Management
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Список ID завершенных турниров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==========================================
   # Team Management
   # ==========================================
 
@@ -711,13 +883,13 @@ components:
       description: Идентификатор команды
 
     UserId:
-      name: id
+      name: userId
       in: path
       required: true
       schema:
         type: string
         format: uuid
-      description: Идентификатор юзера
+      description: Идентификатор пользователя
 
   schemas:
     # ==========================================
@@ -778,6 +950,23 @@ components:
           type: string
           format: uuid
           example: "123e4567-e89b-12d3-a456-426614174000"
+        state:
+          description: Текущее состояние турнира
+
+    TournamentInstantState:
+      type: string
+      enum:
+        - endedTournaments
+        - openedRegistrationTournaments
+        - ongoingTournaments
+        - closedRegistrationTournaments
+      description: |
+        Состояние турнира:
+        - endedTournaments: Завершенные турниры
+        - openedRegistrationTournaments: Турниры с открытой регистрацией
+        - ongoingTournaments: Текущие турниры
+        - closedRegistrationTournaments: Турниры с закрытой регистрацией
+      example: "ongoingTournaments"
 
     # ==========================================
     # Team Schemas

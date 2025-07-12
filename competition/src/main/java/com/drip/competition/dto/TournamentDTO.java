@@ -1,6 +1,7 @@
 package com.drip.competition.dto;
 
 import com.drip.competition.entity.Sport;
+import com.drip.competition.entity.TournamentInstantState;
 import com.drip.competition.entity.TypeGroup;
 import com.drip.competition.entity.TypeTournament;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ public class TournamentDTO {
     private Sport sport;
     private TypeTournament typeTournament;
     private TypeGroup typeGroup;
+    private TournamentInstantState tournirInstantState;
     private Integer matchesNumber;
     private LocalDateTime startTime;
     private LocalDateTime createdAt;

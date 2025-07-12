@@ -15,7 +15,7 @@ services:
       - "5398:5432"
     volumes:
       - competition_data:/var/lib/postgresql/data
-      - ./init-scripts/competition:/docker-entrypoint-initdb.d
+      - ./competition/init-scripts/competition:/docker-entrypoint-initdb.d
     networks:
       - sports-network
     healthcheck:

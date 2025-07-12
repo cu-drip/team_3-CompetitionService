@@ -4,6 +4,7 @@ CREATE TYPE type_tournament AS ENUM ('solo', 'team');
 CREATE TYPE type_group AS ENUM ('olympic', 'swiss', 'round_robin');
 CREATE TYPE participant_type AS ENUM ('solo', 'team');
 CREATE TYPE status AS ENUM ('pending', 'accepted', 'rejected');
+CREATE TYPE tournament_instant_state AS ENUM ('endedTournaments', 'openedRegistrationTournaments','ongoingTournaments', 'closedRegistrationTournaments');
 
 -- Создание таблиц
 CREATE TABLE teams
@@ -16,20 +17,21 @@ CREATE TABLE teams
 
 CREATE TABLE tournaments
 (
-    id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title                 VARCHAR(255)    NOT NULL,
-    description           TEXT,
-    sport                 sport           NOT NULL,
-    type_tournament       type_tournament NOT NULL,
-    type_group            type_group      NOT NULL,
-    matches_number        INTEGER          DEFAULT 0,
-    start_time            TIMESTAMP,
-    created_at            TIMESTAMP        DEFAULT CURRENT_TIMESTAMP,
-    entry_cost            FLOAT            DEFAULT 0,
-    max_participants      INTEGER          DEFAULT 0,
-    registration_deadline TIMESTAMP,
-    place                 VARCHAR(255),
-    organizer_id          UUID            NOT NULL -- Ссылка на user_service
+    id                       UUID PRIMARY KEY                  DEFAULT gen_random_uuid(),
+    title                    VARCHAR(255)             NOT NULL,
+    description              TEXT,
+    sport                    sport                    NOT NULL,
+    type_tournament          type_tournament          NOT NULL,
+    type_group               type_group               NOT NULL,
+    tournament_instant_state tournament_instant_state NOT NULL DEFAULT 'openedRegistrationTournaments',
+    matches_number           INTEGER                           DEFAULT 0,
+    start_time               TIMESTAMP,
+    created_at               TIMESTAMP                         DEFAULT CURRENT_TIMESTAMP,
+    entry_cost               FLOAT                             DEFAULT 0,
+    max_participants         INTEGER                           DEFAULT 0,
+    registration_deadline    TIMESTAMP,
+    place                    VARCHAR(255),
+    organizer_id             UUID                     NOT NULL -- Ссылка на user_service
 );
 
 CREATE TABLE tournament_registrations

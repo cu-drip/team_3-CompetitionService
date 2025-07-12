@@ -58,6 +58,7 @@ public class TournamentService {
         existing.setSport(dto.getSport());
         existing.setTypeTournament(dto.getTypeTournament());
         existing.setTypeGroup(dto.getTypeGroup());
+        existing.setTournirInstantState(dto.getTournirInstantState());
         existing.setMatchesNumber(dto.getMatchesNumber());
         existing.setStartTime(dto.getStartTime());
         existing.setEntryCost(dto.getEntryCost());
@@ -87,6 +88,9 @@ public class TournamentService {
         }
         if (dto.getTypeGroup() != null) {
             existing.setTypeGroup(dto.getTypeGroup());
+        }
+        if (dto.getTournirInstantState() != null) {
+            existing.setTournirInstantState(dto.getTournirInstantState());
         }
         if (dto.getMatchesNumber() != null) {
             existing.setMatchesNumber(dto.getMatchesNumber());
@@ -197,6 +201,56 @@ public class TournamentService {
             tournamentId, participantId, type);
     }
 
+    public List<UUID> getUserTournaments(UUID userId) {
+        return registrationRepository.findTournamentIdsByParticipantId(userId);
+    }
+
+    // Метод для получения турниров по состоянию
+    public List<UUID> getUserTournamentsByState(UUID userId, TournamentInstantState state) {
+        return registrationRepository.findTournamentIdsByParticipantIdAndTournamentState(userId, state);
+    }
+
+    // Метод для получения турниров по типу участника
+    public List<UUID> getUserTournamentsByType(UUID userId, ParticipantType participantType) {
+        return registrationRepository.findTournamentIdsByParticipantIdAndType(userId, participantType);
+    }
+
+    // Метод для получения турниров по типу участника и состоянию
+    public List<UUID> getUserTournamentsByTypeAndState(UUID userId, ParticipantType participantType, TournamentInstantState state) {
+        return registrationRepository.findTournamentIdsByParticipantIdAndTypeAndTournamentState(userId, participantType, state);
+    }
+
+    // Альтернативный метод для получения полной информации о турнирах
+    public List<TournamentDTO> getUserTournamentDetails(UUID userId) {
+        List<UUID> tournamentIds = registrationRepository.findTournamentIdsByParticipantId(userId);
+
+        return tournamentIds.stream()
+            .map(this::getTournamentById)
+            .collect(Collectors.toList());
+    }
+
+    // Метод для получения полной информации о турнирах по состоянию
+    public List<TournamentDTO> getUserTournamentDetailsByState(UUID userId, TournamentInstantState state) {
+        List<UUID> tournamentIds = registrationRepository.findTournamentIdsByParticipantIdAndTournamentState(userId, state);
+
+        return tournamentIds.stream()
+            .map(this::getTournamentById)
+            .collect(Collectors.toList());
+    }
+
+    // Удобные методы для популярных состояний
+    public List<UUID> getUserOngoingTournaments(UUID userId) {
+        return getUserTournamentsByState(userId, TournamentInstantState.ongoingTournaments);
+    }
+
+    public List<UUID> getUserOpenRegistrationTournaments(UUID userId) {
+        return getUserTournamentsByState(userId, TournamentInstantState.openedRegistrationTournaments);
+    }
+
+    public List<UUID> getUserEndedTournaments(UUID userId) {
+        return getUserTournamentsByState(userId, TournamentInstantState.endedTournaments);
+    }
+
     public void notifyParticipants(UUID tournamentId) {
         // Получаем всех зарегистрированных участников
         List<UUID> participantIds = registrationRepository.findParticipantIdsByTournamentIdAndStatus(
@@ -232,6 +286,7 @@ public class TournamentService {
         dto.setSport(entity.getSport());
         dto.setTypeTournament(entity.getTypeTournament());
         dto.setTypeGroup(entity.getTypeGroup());
+        dto.setTournirInstantState(entity.getTournirInstantState());
         dto.setMatchesNumber(entity.getMatchesNumber());
         dto.setStartTime(entity.getStartTime());
         dto.setCreatedAt(entity.getCreatedAt());
@@ -251,6 +306,7 @@ public class TournamentService {
         entity.setSport(dto.getSport());
         entity.setTypeTournament(dto.getTypeTournament());
         entity.setTypeGroup(dto.getTypeGroup());
+        entity.setTournirInstantState(dto.getTournirInstantState());
         entity.setMatchesNumber(dto.getMatchesNumber());
         entity.setStartTime(dto.getStartTime());
         entity.setEntryCost(dto.getEntryCost());
