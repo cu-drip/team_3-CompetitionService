@@ -39,6 +39,11 @@ public class Tournament {
     @Column(name = "type_group")
     private TypeGroup typeGroup;
 
+    // сори за нейминг, ui не сможет поменять это вручную
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tournament_instant_state")
+    private TournamentInstantState tournirInstantState;
+
     @Column(name = "matches_number")
     private Integer matchesNumber;
 
