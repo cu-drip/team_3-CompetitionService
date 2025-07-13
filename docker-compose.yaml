@@ -1,6 +1,6 @@
 secrets:
   jwt_secret:
-    file: ./secrets/jwt-secret.key
+    file: ../secrets/jwt-secret.key
 
 services:
   competitiondb:
@@ -23,9 +23,9 @@ services:
       interval: 10s
       retries: 5
 
-  competition-service:
+  competitionservice:
     build: ./competition  # Путь к папке с Dockerfile
-    container_name: competition-service
+    container_name: competitionservice
     restart: on-failure
     depends_on:
       competitiondb:
