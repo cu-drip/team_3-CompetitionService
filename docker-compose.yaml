@@ -1,6 +1,6 @@
 secrets:
   jwt_secret:
-    file: ../secrets/jwt-secret.key
+    file: ../secrets/jwt_secret.key
 
 services:
   competitiondb:
